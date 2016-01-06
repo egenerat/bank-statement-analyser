@@ -14,6 +14,7 @@ CATEGORIES = {
     'transport' : ['GWR', 'LUL TICKET'],
     'phone': ['giffgaff'],
     'miscallenous' : ['CARDS GALORE'],
+    'repayments': ['DIRECT DEBIT PAYMENT'],
     'unCategorized': []
 }
 
@@ -24,19 +25,27 @@ def order_by_category(expenses, categories):
     result = {}
     # initiate result
     for i in categories:
-        result[i] = 0
-        uncategorized_description = []
+        result[i] = {
+            'amount': 0,
+            'obj': []
+        }
+        uncategorized_description = {
+            'amount': 0,
+            'obj': []
+        }
+        
 
     for i in expenses:
         is_categorized = False
         for j in categories:
             for k in categories[j]:
                 if k.lower() in i['description'].lower():
-                    result[j] += i['price']
+                    result[j]['amount'] += i['price']
+                    result[j]['obj'].append(i['description'])
                     is_categorized = True
         if not is_categorized:
-            result['unCategorized'] += i['price']
-            uncategorized_description.append(i['description'])
+            uncategorized_description['amount'] += i['price']
+            uncategorized_description['obj'].append(i['description'])
     return {
         'result': result,
         'uncategorized_description': uncategorized_description
@@ -64,24 +73,24 @@ def parse_bank1(filename):
             is_header = False
     return result
 
-def sum_total_expense(data_dict):
-	sum = 0
-	# for i in data_dict:
-	# 	sum += data_dict[i]
-	return sum
+def sum_total_expenses(data_dict):
+    sum = 0
+    for i in data_dict:
+        sum += data_dict[i]
+    return sum
 
 
 if __name__ == '__main__':
-	filename = get_filename()
-	expenses = parse_bank1(filename)
-	sorted_data = order_by_category(expenses, CATEGORIES)
+    filename = get_filename()
+    expenses = parse_bank1(filename)
+    sorted_data = order_by_category(expenses, CATEGORIES)
 
-	result_to_display = sorted_data['result']
-	unCategorized = sorted_data['uncategorized_description']
+    result_to_display = sorted_data['result']
+    unCategorized = sorted_data['uncategorized_description']
 
-	result_to_display = sorted(result_to_display.items(), key=lambda x:x[1], reverse=True)
+    sorted_result = sorted(result_to_display.items(), key=lambda x: x[1], reverse=True)
 
-	print(result_to_display)
+    for i in sorted_result:
+        print('{cat}: {amount}'.format(cat=i[0], amount=i[1]))
 
-	for i in result_to_display:
-		print('{cat}: {amount}'.format(cat=i, amount=result_to_display[i]))
+    print(sum_total_expenses(result_to_display))
