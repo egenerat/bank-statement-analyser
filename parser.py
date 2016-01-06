@@ -45,7 +45,7 @@ def order_by_category(expenses, categories):
 def get_filename():
     return sys.argv[1]
 
-def parse(filename):
+def parse_bank1(filename):
     result = []
     is_header = True
     with open(filename, 'rb') as f:
@@ -64,7 +64,24 @@ def parse(filename):
             is_header = False
     return result
 
-filename = get_filename()
-expenses = parse(filename)
-result_to_display = order_by_category(expenses, CATEGORIES)
-print(result_to_display)
+def sum_total_expense(data_dict):
+	sum = 0
+	# for i in data_dict:
+	# 	sum += data_dict[i]
+	return sum
+
+
+if __name__ == '__main__':
+	filename = get_filename()
+	expenses = parse_bank1(filename)
+	sorted_data = order_by_category(expenses, CATEGORIES)
+
+	result_to_display = sorted_data['result']
+	unCategorized = sorted_data['uncategorized_description']
+
+	result_to_display = sorted(result_to_display.items(), key=lambda x:x[1], reverse=True)
+
+	print(result_to_display)
+
+	for i in result_to_display:
+		print('{cat}: {amount}'.format(cat=i, amount=result_to_display[i]))
