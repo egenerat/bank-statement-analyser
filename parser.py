@@ -1,26 +1,18 @@
 import csv
 import sys
 import datetime
-
-CATEGORIES = {
-    'groceries': ['tesco'],
-    'groceries_plus': ['SAINSBURYS', 'MARKS & SPENCER', 'M&S', 'waitrose'],
-    'work_restaurant': ['UPAY'],
-    'restaurant': ['paul', 'chez antoinette', 'ELECTRIC CINEMA', 'BENS COOKIES', 'MCDONALDS',
-    'TINSELTOWN', 'SANTA MARIA'],
-    'bars': ['BAVARIAN VILLAGE', 'UNDERBELLY LIMITED'], 
-    'club': ['TIGER TIGER'],
-    'clothes': ['primark'],
-    'transport': ['GWR', 'LUL TICKET'],
-    'phone': ['giffgaff'],
-    'miscallenous': ['CARDS GALORE'],
-    'repayments': ['DIRECT DEBIT PAYMENT'],
-    'unCategorized': []
-}
+from constants import BANK1_HEADER_FIELDS, BANK2_HEADER_FIELDS, CATEGORIES, DIRECT_DEBIT_PAYMENT
 
 
-def date_from_string(str_date):
-    return datetime.datetime.strptime(str_date, "%d/%m/%Y").date()
+def format_amount(amount):
+    print "{:10.2f}".format(amount)
+    
+def format_column(text):
+    return "{:10.2f}".format(text)
+
+
+def date_from_string(str_date, pattern):
+    return datetime.datetime.strptime(str_date, pattern).date()
 
 
 def order_by_category(expenses, categories):
@@ -31,10 +23,6 @@ def order_by_category(expenses, categories):
             'amount': 0,
             'obj': []
         }
-        uncategorized_description = {
-            'amount': 0,
-            'obj': []
-        }
 
     for i in expenses:
         is_categorized = False
@@ -42,46 +30,50 @@ def order_by_category(expenses, categories):
             for k in categories[j]:
                 if k.lower() in i['description'].lower():
                     result[j]['amount'] += i['amount']
-                    result[j]['obj'].append(i['description'])
+                    result[j]['obj'].append(i)
                     is_categorized = True
         if not is_categorized:
-            uncategorized_description['amount'] += i['amount']
-            uncategorized_description['obj'].append(i['description'])
-    return {
-        'result': result,
-        'uncategorized_description': uncategorized_description
-    }
+            result['unCategorized']['amount'] += i['amount']
+            result['unCategorized']['obj'].append(i)
+    return result
 
 
 def get_filename():
-    return sys.argv[1]
+    return sys.argv[1:]
 
 
-def parse_bank1(filename):
+def meta_parser(filename):
+    if 'statements.csv' in filename:
+        return parser_bank(filename, BANK1_HEADER_FIELDS)
+    else:
+        return parser_bank(filename, BANK2_HEADER_FIELDS)
+
+
+def parser_bank(filename, header_fields):
     result = []
-    is_header = True
-    with open(filename, 'r') as f:
-        reader = csv.reader(f)
+    with open(filename) as csvfile:
+        reader = csv.DictReader(csvfile)
         for row in reader:
-            if not is_header:
                 obj = {
-                    # could be row[1], depends if we want the date of purchase (better),
-                    # or effective date on bank account (less subject to problem 
-                    # if the 2 dates are in different months)
-                    'date': date_from_string(row[0]),
-                    'description': row[3],
-                    'amount': float(row[4])
+                    'date': date_from_string(row[header_fields['date']], header_fields['date_format']),
+                    'description': row[header_fields['description']].strip(),
+                    'amount': header_fields['sign'] * float(row[header_fields['amount']])
                 }
                 result.append(obj)
-            is_header = False
-    return result
+    return result    
 
 
 def sum_total_expenses(data_dict):
     expenses_sum = 0
+    transaction_nb = 0
     for i in data_dict:
-        expenses_sum += data_dict[i]
-    return expenses_sum
+        if DIRECT_DEBIT_PAYMENT.lower() not in i['description'].lower():
+            expenses_sum += i['amount']
+            transaction_nb += 1
+    return {
+        'expenses_sum': expenses_sum,
+        'transaction_nb': transaction_nb
+    }
 
 
 def display_highest_amounts(expenses):
@@ -91,26 +83,29 @@ def display_highest_amounts(expenses):
 
 
 def display_sorted_categories(expenses):
-    sorted_data = order_by_category(expenses, CATEGORIES)
-    result_to_display = sorted_data['result']
-    un_categorized = sorted_data['uncategorized_description']
-
-    print('Results:')
-    print(result_to_display)
-
+    result_to_display = order_by_category(expenses, CATEGORIES)
     sorted_result = sorted(result_to_display.items(), key=lambda x: x[1], reverse=True)
 
     for i in sorted_result:
-        print('{cat}: {amount}'.format(cat=i[0], amount=i[1]))
-
-    print(sum_total_expenses(result_to_display))
-
-    print('Uncategorized:')
-    print(un_categorized)
+        category_amount = i[1]['amount']
+        if category_amount > 0:
+            print('{cat}: {amount}'.format(cat=i[0], amount=category_amount))
+    
+    if result_to_display['unCategorized']['amount'] <> 0:
+        print('unCategorized:')
+        print(result_to_display['unCategorized'])
+        for i in result_to_display['unCategorized']['obj']:
+            print(i)
 
 if __name__ == '__main__':
-    filename = get_filename()
-    expenses = parse_bank1(filename)
+    filename_list = get_filename()
+    expenses = []
+    for filename in filename_list:
+        expenses += meta_parser(filename)
+
+    print(expenses)
 
     display_highest_amounts(expenses)
+    print(sum_total_expenses(expenses))
+
     display_sorted_categories(expenses)
