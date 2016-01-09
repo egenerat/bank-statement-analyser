@@ -1,3 +1,4 @@
 *.csv
 *.pyc
 private_constants.py
+.idea/
