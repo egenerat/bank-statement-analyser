@@ -5,7 +5,7 @@ from constants import BANK1_HEADER_FIELDS, BANK2_HEADER_FIELDS, CATEGORIES, DIRE
 
 
 def format_amount(amount):
-    print "{:10.2f}".format(amount)
+    print("{:10.2f}".format(amount))
     
 def format_column(text):
     return "{:10.2f}".format(text)
@@ -91,7 +91,7 @@ def display_sorted_categories(expenses):
         if category_amount > 0:
             print('{cat}: {amount}'.format(cat=i[0], amount=category_amount))
     
-    if result_to_display['unCategorized']['amount'] <> 0:
+    if result_to_display['unCategorized']['amount'] != 0:
         print('unCategorized:')
         print(result_to_display['unCategorized'])
         for i in result_to_display['unCategorized']['obj']:
