@@ -68,7 +68,7 @@ def sum_total_expenses(data_dict):
     expenses_sum = 0
     transaction_nb = 0
     for i in data_dict:
-        if DIRECT_DEBIT_PAYMENT.lower() not in i['description'].lower():
+        if DIRECT_DEBIT_PAYMENT.lower() not in i['description'].lower() and i['amount'] < 0 and not i['amount'] == -720:
             expenses_sum += i['amount']
             transaction_nb += 1
     return {
@@ -89,19 +89,20 @@ def display_sorted_categories(expenses):
 
     for i in sorted_result:
         category_amount = i[1]['amount']
-        if category_amount > 0:
+        if category_amount != 0:
             print('{cat}: {amount}'.format(cat=i[0], amount=category_amount))
     
-    if result_to_display['unCategorized']['amount'] != 0:
-        print('unCategorized:')
-        print(result_to_display['unCategorized'])
-        for i in result_to_display['unCategorized']['obj']:
-            print(i)
+    # if result_to_display['unCategorized']['amount'] != 0:
+    #     print('unCategorized:')
+    #     print(result_to_display['unCategorized'])
+    #     for i in result_to_display['unCategorized']['obj']:
+    #         print(i)
+
 
 def get_all_data_files():
     walk_dir = ROOT_DIR
     result = [os.path.join(root, f) for root, subdirs, files in os.walk(walk_dir) for f in files]
-    print(result)
+    return result
 
 
 def sort_expenses_by_month(expenses_list):
@@ -116,16 +117,21 @@ def sort_expenses_by_month(expenses_list):
     return result
 
 if __name__ == '__main__':
-    filename_list = get_filename()
+    # filename_list = get_filename()
     expenses = []
-    for filename in filename_list:
+    # for filename in filename_list:
+    for filename in get_all_data_files():
         expenses += meta_parser(filename)
 
-    print(expenses)
+    # for i in expenses:
+    #     print(i)
 
-    print(sort_expenses_by_month(expenses))
+    sorted_by_month = sort_expenses_by_month(expenses)
+    sorted_list_by_month = sorted(sorted_by_month.items(), key=lambda x:x[0])
 
-    display_highest_amounts(expenses)
-    print(sum_total_expenses(expenses))
-
-    display_sorted_categories(expenses)
+    for i in sorted_list_by_month:
+        print('_'*10)
+        print(i[0] + ': ' +str(sum_total_expenses(i[1])['expenses_sum']))
+        print(display_sorted_categories(i[1]))
+        # print(order_by_category(i[1], CATEGORIES))
+    #display_sorted_categories(expenses)
