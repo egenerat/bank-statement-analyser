@@ -1,7 +1,8 @@
 import csv
+import os
 import sys
 import datetime
-from constants import BANK1_HEADER_FIELDS, BANK2_HEADER_FIELDS, CATEGORIES, DIRECT_DEBIT_PAYMENT
+from constants import BANK1_HEADER_FIELDS, BANK2_HEADER_FIELDS, CATEGORIES, DIRECT_DEBIT_PAYMENT, ROOT_DIR
 
 
 def format_amount(amount):
@@ -97,6 +98,23 @@ def display_sorted_categories(expenses):
         for i in result_to_display['unCategorized']['obj']:
             print(i)
 
+def get_all_data_files():
+    walk_dir = ROOT_DIR
+    result = [os.path.join(root, f) for root, subdirs, files in os.walk(walk_dir) for f in files]
+    print(result)
+
+
+def sort_expenses_by_month(expenses_list):
+    result = {}
+    for i in expenses_list:
+        expense_month = str(i['date'].month)
+        expense_year = str(i['date'].year)
+        period = expense_year + '-' + expense_month
+        if period not in result:
+            result[period] = []
+        result[period].append(i)
+    return result
+
 if __name__ == '__main__':
     filename_list = get_filename()
     expenses = []
@@ -104,6 +122,8 @@ if __name__ == '__main__':
         expenses += meta_parser(filename)
 
     print(expenses)
+
+    print(sort_expenses_by_month(expenses))
 
     display_highest_amounts(expenses)
     print(sum_total_expenses(expenses))
