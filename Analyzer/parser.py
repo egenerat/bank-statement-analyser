@@ -7,7 +7,8 @@ from constants import BANK1_HEADER_FIELDS, BANK2_HEADER_FIELDS, CATEGORIES, DIRE
 
 def format_amount(amount):
     print("{:10.2f}".format(amount))
-    
+
+
 def format_column(text):
     return "{:10.2f}".format(text)
 
