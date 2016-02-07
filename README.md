@@ -10,3 +10,6 @@ Run the tests
 
 cd analyzer
 python -m unittest discover .
+
+
+![Build status](https://travis-ci.org/egenerat/bank-statement-analyser.svg)
