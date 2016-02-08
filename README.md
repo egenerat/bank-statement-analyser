@@ -12,4 +12,4 @@ cd analyzer
 python -m unittest discover .
 
 
-![Build status](https://travis-ci.org/egenerat/bank-statement-analyser.svg)
+[![Build Status](https://travis-ci.org/egenerat/bank-statement-analyser.svg?branch=master)](https://travis-ci.org/egenerat/bank-statement-analyser)
