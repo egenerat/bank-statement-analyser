@@ -1,3 +1,6 @@
+from parser import meta_parser
+from utils import sum_total_expenses, get_all_data_files, display_sorted_categories, sort_expenses_by_month
+
 if __name__ == '__main__':
     # filename_list = get_filename()
     expenses = []

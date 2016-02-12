@@ -1,9 +1,7 @@
 import csv
-import os
-import sys
-import datetime
 from constants import BANK1_HEADER_FIELDS, BANK2_HEADER_FIELDS
 from utils import date_from_string
+
 
 def meta_parser(filename):
     if 'statements.csv' in filename:
